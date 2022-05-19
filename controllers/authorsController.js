@@ -1,4 +1,4 @@
-import pool from "../db/pg";
+import pool from "../db/pg.js";
 
 export const getAllAuthors = (req, res) => {
 

@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { getAllAuthors } from "../controllers/authorsController";
+import { getAllAuthors } from "../controllers/authorsController.js";
 
-const postsRouter = Router();
+const authorsRouter = Router();
 
-postsRouter.route("/").get(getAllAuthors);
+authorsRouter.route("/").get(getAllAuthors);
 
 export default authorsRouter;

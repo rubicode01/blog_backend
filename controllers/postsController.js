@@ -9,11 +9,56 @@ export const getAllPosts = (req, res) => {
     .catch((err) => console.log(err));
 };
 
-//In Arbeit
+//POST
 export const createPost = (req, res) => {
   const { first_name, last_name, title, content, url, description } = req.body;
+  let auth_id;
+  let img_id;
 
-  pool.query("INSERT INTO blog_posts (first_name, last_name, title, content)");
+  //Überprüfen ob es den Autor schon gibt, wenn nicht einen erstellen. Die ID speichern
+  pool
+    .query("SELECT * FROM authors WHERE first_name = $1 AND last_name = $2", [
+      first_name,
+      last_name,
+    ])
+    .then((auth) => {
+      if (auth.rowCount == 0) {
+        pool
+          .query(
+            "INSERT INTO authors (first_name, last_name) VALUES ($1, $2) RETURNING *",
+            [first_name, last_name]
+          )
+          .then((new_auth) => (auth_id = new_auth.rows[0].id))
+          .catch((err) => res.send(err))
+      } else {
+        auth_id = auth.rows[0].id;
+        console.log("hi");
+      }
+      
+      //Überprüfen ob es das Bild schon gibt, wenn nicht eins erstellen. Die ID speichern
+      pool.query("SELECT * FROM images WHERE url = $1", [url]).then((img) => {
+        if (img.rowCount == 0) {
+          pool
+            .query(
+              "INSERT INTO images (url, description) VALUES ($1, $2) RETURNING *",
+              [url, description]
+            )
+            .then((new_img) => (img_id = new_img.rows[0].id))
+            .catch((err) => res.send(err))
+        } else {
+          img_id = img.rows[0].id;
+        }
+        
+        //Blogpost erstellen. Dazu werden die gespeicherten IDs verwendet
+        pool
+          .query(
+              "INSERT INTO blog_posts (title, content, image_id, author_id, date) VALUES ($1, $2, $3, $4, NOW()) RETURNING *",
+              [title, content, img_id, auth_id]
+            )
+            .then((data) => res.status(200).send(data.rows[0]))
+            .catch((err) => res.send(err))
+        });
+    });
 };
 
 export const getSinglePost = (req, res) => {
