@@ -48,3 +48,21 @@ export const getSinglePost = (req, res) => {
     })
     .catch((err) => res.status(500).json(err));
 };
+
+//POST
+export const createComment = (req, res) => {
+
+  pool.query()
+  .then()
+  .catch()
+
+}
+
+//POST
+export const likePost = (req, res) => {
+
+  pool.query()
+  .then()
+  .catch()
+
+}
