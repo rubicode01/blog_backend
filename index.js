@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/posts", postsRouter);
-app.use("api/authors", authorsRouter);
+app.use("/api/authors", authorsRouter);
 
 app.listen(port, () => 
     console.log(`Server listen on port ${port}`)
