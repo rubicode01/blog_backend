@@ -105,11 +105,11 @@ export const createComment = (req, res) => {
 
 }
 
-//POST
+//UPDATE
 export const likePost = (req, res) => {
+  const { id } = req.params;
 
-  pool.query()
-  .then()
-  .catch()
-
+  pool.query("UPDATE blog_posts SET likes = likes + 1 WHERE id = $1 RETURNING *", [id])
+  .then((data) => res.status(200).json(data.rows[0]))
+  .catch((err) => res.status(500).json(err))
 }

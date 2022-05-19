@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getAllPosts, createPost, getSinglePost, createComment } from "../controllers/postsController.js";
+import { getAllPosts, createPost, getSinglePost, createComment, likePost } from "../controllers/postsController.js";
 
 const postsRouter = Router();
 
@@ -15,6 +15,6 @@ postsRouter.route("/:id/comments")
     .post(createComment);
 
 postsRouter.route("/:id/likes")
-    // .post(likePost); //Karims Part
+    .put(likePost); //Karims Part
 
 export default postsRouter;
