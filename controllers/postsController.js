@@ -29,7 +29,7 @@ export const createPost = (req, res) => {
             [first_name, last_name]
           )
           .then((new_auth) => (auth_id = new_auth.rows[0].id))
-          .catch((err) => res.send(err))
+          .catch((err) => res.json(err))
       } else {
         auth_id = auth.rows[0].id;
         console.log("hi");
@@ -44,7 +44,7 @@ export const createPost = (req, res) => {
               [url, description]
             )
             .then((new_img) => (img_id = new_img.rows[0].id))
-            .catch((err) => res.send(err))
+            .catch((err) => res.json(err))
         } else {
           img_id = img.rows[0].id;
         }
@@ -55,8 +55,8 @@ export const createPost = (req, res) => {
               "INSERT INTO blog_posts (title, content, image_id, author_id, date) VALUES ($1, $2, $3, $4, NOW()) RETURNING *",
               [title, content, img_id, auth_id]
             )
-            .then((data) => res.status(200).send(data.rows[0]))
-            .catch((err) => res.send(err))
+            .then((data) => res.status(200).json(data.rows[0]))
+            .catch((err) => res.json(err))
         });
     });
 };
@@ -96,10 +96,12 @@ export const getSinglePost = (req, res) => {
 
 //POST
 export const createComment = (req, res) => {
+  const { name, comment } = req.body;
+  const { id } = req.params;
 
-  pool.query()
-  .then()
-  .catch()
+  pool.query("INSERT INTO comments (name, comment, post_id, date) VALUES($1, $2, $3, NOW()) RETURNING *", [name, comment, id])
+  .then((data) => res.status(201).json(data.rows[0]))
+  .catch((err) => res.status(500).json(err))
 
 }
 
