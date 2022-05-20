@@ -14,6 +14,7 @@ export const createPost = (req, res) => {
   const { first_name, last_name, title, content, url, description } = req.body;
   let auth_id;
   let img_id;
+  let date = "now()"
 
   //Überprüfen ob es den Autor schon gibt, wenn nicht einen erstellen. Die ID speichern
   pool
@@ -29,10 +30,20 @@ export const createPost = (req, res) => {
             [first_name, last_name]
           )
           .then((new_auth) => (auth_id = new_auth.rows[0].id))
-          .catch((err) => res.json(err))
+          .catch((err) => res.json(err));
       } else {
         auth_id = auth.rows[0].id;
-        console.log("hi");
+      }
+
+      //Blogpost erstellen. Dazu werden die gespeicherten IDs verwendet
+      const sendPost = (img_id) => {
+        pool
+        .query(
+          "INSERT INTO blog_posts (title, content, image_id, author_id, date) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+          [title, content, img_id, auth_id, date]
+        )
+        .then((data) => res.status(200).json(data.rows[0]))
+        .catch((err) => res.json(err));
       }
       
       //Überprüfen ob es das Bild schon gibt, wenn nicht eins erstellen. Die ID speichern
@@ -43,21 +54,23 @@ export const createPost = (req, res) => {
               "INSERT INTO images (url, description) VALUES ($1, $2) RETURNING *",
               [url, description]
             )
-            .then((new_img) => (img_id = new_img.rows[0].id))
-            .catch((err) => res.json(err))
+            .then((new_img) => {
+              img_id = new_img.rows[0].id;
+              sendPost(img_id);
+              console.log(img_id);
+            })
+            .catch((err) => res.json(err));
         } else {
           img_id = img.rows[0].id;
+          sendPost(img_id);
+          console.log("hi____");
         }
+
+        console.log(`image Id ausserhalb der function: ${img_id}`)
+
         
-        //Blogpost erstellen. Dazu werden die gespeicherten IDs verwendet
-        pool
-          .query(
-              "INSERT INTO blog_posts (title, content, image_id, author_id, date) VALUES ($1, $2, $3, $4, NOW()) RETURNING *",
-              [title, content, img_id, auth_id]
-            )
-            .then((data) => res.status(200).json(data.rows[0]))
-            .catch((err) => res.json(err))
-        });
+       
+      });
     });
 };
 
@@ -99,17 +112,24 @@ export const createComment = (req, res) => {
   const { name, comment } = req.body;
   const { id } = req.params;
 
-  pool.query("INSERT INTO comments (name, comment, post_id, date) VALUES($1, $2, $3, NOW()) RETURNING *", [name, comment, id])
-  .then((data) => res.status(201).json(data.rows[0]))
-  .catch((err) => res.status(500).json(err))
-
-}
+  pool
+    .query(
+      "INSERT INTO comments (name, comment, post_id, date) VALUES($1, $2, $3, NOW()) RETURNING *",
+      [name, comment, id]
+    )
+    .then((data) => res.status(201).json(data.rows[0]))
+    .catch((err) => res.status(500).json(err));
+};
 
 //UPDATE
 export const likePost = (req, res) => {
   const { id } = req.params;
 
-  pool.query("UPDATE blog_posts SET likes = likes + 1 WHERE id = $1 RETURNING *", [id])
-  .then((data) => res.status(200).json(data.rows[0]))
-  .catch((err) => res.status(500).json(err))
-}
+  pool
+    .query(
+      "UPDATE blog_posts SET likes = likes + 1 WHERE id = $1 RETURNING *",
+      [id]
+    )
+    .then((data) => res.status(200).json(data.rows[0]))
+    .catch((err) => res.status(500).json(err));
+};
